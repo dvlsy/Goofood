@@ -33,7 +33,7 @@ app.use('/api', router,swaggerui.serve, swaggerui.setup(swaggerDocument))
 
 
 ///route pour la documentation
-app.use('/doc', function(req, res, next){
+app.use('/', function(req, res, next){
     swaggerDocument.host = req.get('host');
     req.swaggerDoc = swaggerDocument;
     next();

@@ -1,4 +1,4 @@
-const db = require('./connectDb');
+const db = require('./connectDb').default;
 module.exports = {
     schemaGetfavoris: async function(response, restaurantQuery){
     

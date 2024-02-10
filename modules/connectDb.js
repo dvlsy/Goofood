@@ -1,7 +1,8 @@
+
+const knexModule = require('knex');
 const dotenv = require('dotenv');
 dotenv.config();
 
-const knexModule = require('knex')
 
 const dbConnection = knexModule({
     client: 'mssql',

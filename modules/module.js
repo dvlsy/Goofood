@@ -1,4 +1,4 @@
-const db = require('./connectDb');
+const db = require('./connectDb').default;
 module.exports = {
     verificationUtilisateur: async function(idUser){
         const verification = await db('utilisateurs')

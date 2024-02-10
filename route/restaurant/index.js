@@ -1,6 +1,6 @@
 const express = require("express");
 const fs = require('fs').promises;
-const db = require('../../modules/connectDb');
+const db = require('../../modules/connectDb').default;
 const {verificationUtilisateur,existanceDonnerDansUneTable} = require('../../modules/module')
 const {schemaGetOneRestaurants,schemaGetAllRestaurants} = require('../../modules/schema')
 const { v4: uuidv4 } = require('uuid');

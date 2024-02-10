@@ -1,0 +1,4 @@
+database server: den1.mssql7.gear.host
+Username: equipe04
+Password: Kx0m_iM0_CKC
+Database: equipe04

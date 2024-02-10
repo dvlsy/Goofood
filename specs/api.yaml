@@ -1,0 +1,977 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Api pour l'application Goofood
+paths:
+  /api/token:
+    post:
+      summary: Route pour créer un jeton d'authentification
+      tags:
+        - token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TokenCreationPayload"
+      responses:
+        "200":
+          description: La réponse lorsque le jeton est créé.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenCreationResponse"
+        "401":
+          description: Non authorizé
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenCreationError"
+  /api/register:
+    post:
+      summary: Route pour créer un l'utilisateur
+      tags:
+        - Inscription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserCreationPayload"
+      responses:
+        "201":
+          description: Quand l'utilisateur est créer, l'api retourne l'email, nom, prenom
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserCreationResponse"
+        "401":
+          description: Non authorizé
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenCreationError"
+  /api/utilisateur:
+    get:
+      security:
+        - bearerAuth: []
+      summary: une route qui permet de chercher un utilisateur
+      tags:
+        - Utilisateur
+      responses:
+        "200":
+          description: les données d'un utilisateur sont retournées
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - idUtilisateur
+                  - email
+                  - nom
+                  - photoDeProfile
+                  - noTelephone
+                  - adresse
+                properties:
+                  idUtilisateur:
+                    type: number
+                  email:
+                    type: string
+                  nom:
+                    type: string
+                  photoDeProfile:
+                    type: string
+                  noTelephone:
+                    type: string
+                  adresse:
+                    type: object
+                    required:
+                      - noRue
+                      - nomRue
+                      - nomVille
+                      - province
+                      - codePostal
+                    properties:
+                      noRue:
+                        type: string
+                      nomRue:
+                        type: string
+                      nomVille:
+                        type: string
+                      province:
+                        type: string
+                      codePostal:
+                        type: string
+        "404":
+          description: L'utilisateur n'existe pas
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFound"
+    put:
+      security:
+        - bearerAuth: []
+      summary: route pour modifier les données d'un utilisateur
+      tags:
+        - Utilisateur
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                motDePasse:
+                  type: string
+                nom:
+                  type: string
+                photoDeProfile:
+                  type: string
+                noTelephone:
+                  type: string
+      responses:
+        "200":
+          description: les données de l'utilisateur ont été modifiées
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Modification"
+    delete:
+      security:
+        - bearerAuth: []
+      summary: Route pour suprimer un utilisateur
+      tags:
+        - Utilisateur
+      responses:
+        "200":
+          description: L'user est supprimé
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Delete"
+        "400":
+          description: Élément non trouvé
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /api/updateProfiles:
+    put:
+      security:
+        - bearerAuth: []
+      summary: Route pour changer une photo de profiles d'un utilisateur
+      tags:
+        - Utilisateur
+      requestBody:
+        content:
+          'image/jpeg':
+            schema:
+              type: string
+              format: binary
+          'image/png':
+            schema:
+              type: string
+              format: binary  
+      responses:
+        "200":
+          description: Photo de profile changé
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  urlProfile:
+                    type: string
+        "400":
+          description:  fichier non traité
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erreur:
+                    type: string
+  /api/restaurant/updatelogoRestaurant:
+    put:
+      tags:
+        - Restaurant
+      parameters:
+        - in: query
+          name: idRestaurant
+          schema:
+            type: number
+          required: true
+          description: Id du restaurant
+      requestBody:
+        content:
+            # a binary file of type png or jpeg
+          'image/jpeg':
+            schema:
+              type: string
+              format: binary
+          'image/png':
+            schema:
+              type: string
+              format: binary  
+      responses:
+        "200":
+          description: logo changé
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  urllogoImage:
+                    type: string
+        "404":
+          description: fichier non traité
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erreur:
+                    type: string
+  /api/favoris:
+    post:
+      security:
+        - bearerAuth: []
+      summary: Route pour ajouter au favoris
+      tags:
+        - Favori Utilisateur
+      parameters:
+        - in: query
+          name: idRestaurant
+          schema:
+            type: number
+          required: true
+          description: Id du restaurant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - idUtilisateur
+                - idRestaurant
+              properties:
+                idUtilisateur:
+                  type: number
+                idRestaurant:
+                  type: number
+      responses:
+        "200":
+          description: l'ajout est réussi
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - insertionFavorie
+                properties:
+                  insertionFavorie:
+                    type: boolean
+        "400":
+          description: soit l'utilisateur n'est pas authoriser ou n'existe pas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erreur:
+                    type: string
+    get:
+      security:
+        - bearerAuth: []
+      summary: une route qui permet de récupérer les restaurants favoris d'un
+        utilisateur
+      tags:
+        - Favori Utilisateur
+      responses:
+        "200":
+          description: les données sont retournées
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - idRestaurant
+                    - nom
+                    - logoImage
+                    - description
+                    - category
+                  properties:
+                    idRestaurant:
+                      type: number
+                    nom:
+                      type: string
+                    logoImage:
+                      type: string
+                    description:
+                      type: string
+                    category:
+                      type: object
+                      required:
+                        - idCategoriesRestaurant
+                        - nom
+                      properties:
+                        idCategoriesRestaurant: 
+                          type: number
+                        nom:
+                          type: string
+        "404":
+          description: les données ne sont pas retournées
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFound"
+    delete:
+      security:
+        - bearerAuth: []
+      summary: Route pour suprimer un favoris
+      tags:
+        - Favori Utilisateur
+      parameters:
+        - in: query
+          name: idRestaurant
+          schema:
+            type: number
+          required: true
+          description: Id du restaurant
+      responses:
+        "200":
+          description: restaurants est supprimé dans favoris
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Delete"
+        "400":
+          description: Élément non trouvé
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /api/restaurant/all:
+    get:
+      summary: Route pour obtenir la liste de tous les restaurants
+      tags:
+        - Restaurant
+      responses:
+        "200":
+          description: la liste des restaurants sont retournées
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Restaurants"
+        "404":
+          description: les données ne sont pas retournées
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFound"
+  /api/restaurant:
+    get:
+      summary: Route pour obtenir les données d'un restaurants
+      tags:
+        - Restaurant
+      parameters:
+        - in: query
+          name: idRestaurant
+          schema:
+            type: number
+          required: true
+          description: Id du restaurant
+      responses:
+        "200":
+          description: les informations d'un restaurant sont retournées
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Restaurant"
+        "404":
+          description: les données ne sont pas retournées
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFound"
+  /api/utilisateur/adresse:
+    put:
+      security:
+        - bearerAuth: []
+      tags:
+        - Utilisateur
+      summary: Route pour modifier une adresse d'un utilisateur
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Adresse"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Adresse"
+        "400":
+          description: impossible de changer l'adresse
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /api/restaurant/adresse:
+    put:
+      tags:
+        - Restaurant
+      summary: Route pour modifier une adresse d'un Restaurant
+      parameters:
+        - in: query
+          name: idRestaurant
+          schema:
+            type: number
+          required: true
+          description: Id du restaurant
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Adresse"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Adresse"
+        "400":
+          description: impossible de changer l'adresse
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /api/categories:
+    get:
+      summary: permet d'avoir la liste de tout les categories des restaurant
+      tags:
+        - Les Categories des Restaurants
+      responses:
+        "200":
+          description: la liste des categories sont retournées
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - nom
+                    - idCategoriesRestaurant
+                  properties:
+                    nom:
+                      type: string
+                    idCategoriesRestaurant:
+                      type: number
+        "404":
+          description: la liste n"est pas trouve
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFound"
+  /api/reservation/all:
+    get:
+      security:
+        - bearerAuth: []
+      summary: Route pour chercher tout les reservations d'un utilisateur
+      tags:
+        - Reservation
+      responses:
+        "200":
+          description: la liste des reservations d'un utilisateur sont retournées
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Reservation"
+        "404":
+          description: la liste n"est pas trouve
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFound"
+  /api/reservation:
+    get:
+      security:
+        - bearerAuth: []
+      summary: Route pour obtenir une reservation
+      tags:
+        - Reservation
+      parameters:
+        - in: query
+          name: idreservation
+          schema:
+            type: number
+          required: true
+          description: Id reservation
+      responses:
+        "200":
+          description: la liste de tout des musiques dans la favories sont retourner
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reservation"
+        "404":
+          description: la liste n"est pas trouve
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFound"
+    post:
+      security:
+        - bearerAuth: []
+      summary: Route pour obtenir faire une reservation
+      tags:
+        - Reservation
+      parameters:
+        - in: query
+          name: idRestaurant
+          schema:
+            type: number
+          required: true
+          description: Id du restaurant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - dateReservation
+                - nbPerson
+                - note
+              properties:
+                dateReservation:
+                  type: string
+                nbPerson:
+                  type: number
+                note:
+                  type: string
+      responses:
+        "201":
+          description: la reservation est faite
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reservation:
+                    type: boolean
+        "400":
+          description: soit l'ustisateur n'est pas authoriser ou n'existe pas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusError:
+                    type: string
+    put:
+      security:
+        - bearerAuth: []
+      summary: Route pour modifier une reservation
+      tags:
+        - Reservation
+      parameters:
+        - in: query
+          name: idRestaurant
+          schema:
+            type: number
+          required: true
+          description: Id du restaurant
+        - in: query
+          name: idReservation
+          schema:
+            type: number
+          required: true
+          description: Id du reservation 
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dateReservation:
+                  type: string
+                nbPerson:
+                  type: number
+                note:
+                  type: string
+      responses:
+        "201":
+          description: la reservation est faite
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Modification"
+        "400":
+          description: soit l'ustisateur n'est pas authoriser ou n'existe pas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusError:
+                    type: string
+    delete:
+      security:
+        - bearerAuth: []
+      summary: Route pour supprimer une reservation
+      tags:
+        - Reservation
+      parameters:
+        - in: query
+          name: idReservation
+          schema:
+            type: number
+          required: true
+          description: Id de l'utilisateur qui a reserver
+        - in: query
+          name: idRestaurant
+          schema:
+            type: number
+          required: true
+          description: Id du restaurant
+      responses:
+        "200":
+          description: La reservation est supprimé
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Delete"
+        "400":
+          description: Élément non trouvé
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    TokenCreationPayload:
+      type: object
+      required:
+        - motDePasse
+        - email
+      properties:
+        motDePasse:
+          type: string
+        email:
+          type: string
+    TokenCreationResponse:
+      type: object
+      required:
+        - token
+      properties:
+        token:
+          type: string
+    TokenCreationError:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+    UserCreationPayload:
+      type: object
+      required:
+        - email
+        - motDePasse
+        - nom
+        - noTelephone
+        - adresse
+      properties:
+        email:
+          type: string
+        motDePasse:
+          type: string
+        nom:
+          type: string
+        noTelephone:
+          type: string
+        adresse:
+          type: object
+          required:
+            - noRue
+            - nomRue
+            - nomVille
+            - province
+            - codePostal
+          properties:
+            noRue:
+              type: string
+            nomRue:
+              type: string
+            nomVille:
+              type: string
+            province:
+              type: string
+            codePostal:
+              type: string
+    UserCreationResponse:
+      type: object
+      required:
+        - email
+        - nom
+      properties:
+        email:
+          type: string
+        nom:
+          type: string
+    Modification:
+      type: object
+      properties:
+        modification:
+          type: boolean
+    Delete:
+      type: object
+      properties:
+        Delete:
+          type: boolean
+    Adresse:
+      type: object
+      properties:
+        noRue:
+          type: string
+        nomRue:
+          type: string
+        nomVille:
+          type: string
+        province:
+          type: string
+        codePostal:
+          type: string
+    Restaurants:
+      type: object
+      required:
+        - idRestaurant
+        - nom
+        - noTelephone
+        - logoImage
+        - description
+        - capaciterMaximal
+        - category
+        - adresse
+      properties:
+        idRestaurant:
+          type: number
+        noTelephone: 
+          type: string          
+        nom:
+          type: string
+        logoImage:
+          type: string
+        description:
+          type: string
+        capaciterMaximal:
+          type: string
+        category:
+          type: object
+          required:
+            - idCategoriesRestaurant
+            - nom
+          properties:
+            idCategoriesRestaurant:
+              type: number
+            nom:
+              type: string
+        adresse:
+          type: object
+          required:
+            - noRue
+            - nomRue
+            - nomVille
+            - province
+            - codePostal
+          properties:
+            noRue:
+              type: string
+            nomRue:
+              type: string
+            nomVille:
+              type: string
+            province:
+              type: string
+            codePostal:
+              type: string
+    Restaurant:
+      type: object
+      required:
+        - idRestaurant
+        - nom
+        - logoImage
+        - noTelephone
+        - description
+        - capaciterMaximal
+        - menu
+        - category
+        - adresse
+      properties:
+        idRestaurant:
+          type: number
+        noTelephone: 
+          type: string
+        nom:
+          type: string
+        logoImage:
+          type: string
+        description:
+          type: string
+        capaciterMaximal:
+          type: string
+        menu:
+          type: object
+          required:
+            - SectionAliments
+          properties:
+            sectionAliments:
+              type: array
+              items:
+                type: object
+                required:
+                  - idSectionAliment
+                  - nom
+                  - aliments
+                properties:
+                  idSectionAliment:
+                    type: number
+                  nom:
+                    type: string
+                  aliments:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - idAliment
+                        - nom
+                        - prix
+                        - quantiter
+                        - description
+                      properties:
+                        idAliment:
+                          type: number
+                        nom:
+                          type: string
+                        prix:
+                          type: number
+                        quantiter:
+                          type: number
+                        description:
+                          type: string
+        category:
+          type: object
+          required:
+            - idCategoriesRestaurant
+            - nom
+          properties:
+            idCategoriesRestaurant:
+              type: number
+            nom:
+              type: string
+        adresse:
+          type: object
+          required:
+            - noRue
+            - nomRue
+            - nomVille
+            - province
+            - codePostal
+          properties:
+            noRue:
+              type: string
+            nomRue:
+              type: string
+            nomVille:
+              type: string
+            province:
+              type: string
+            codePostal:
+              type: string
+    Reservation:
+      type: object
+      required:
+        - idUtilisateur
+        - idreservation
+        - dateReservation
+        - nombredePersonne
+        - idRestaurant
+        - nomRestaurnat
+        - adresseRestaurant
+        - note
+      properties:
+        idUtilisateur:
+          type: number
+        idreservation:
+          type: number
+        dateReservation:
+          type: string
+        nombredePersonne:
+          type: number
+        idRestaurant:
+          type: number
+        nomRestaurnat:
+          type: string
+        adresseRestaurant:
+          type: object
+          required:
+            - noRue
+            - nomRue
+            - nomVille
+            - province
+            - codePostal
+          properties:
+            noRue:
+              type: string
+            nomRue:
+              type: string
+            nomVille:
+              type: string
+            province:
+              type: string
+            codePostal:
+              type: string
+        note:
+          type: number
+    NotFound:
+      type: object
+      required:
+        - statusError
+      properties:
+        statusError:
+          type: string

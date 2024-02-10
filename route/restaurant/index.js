@@ -55,7 +55,7 @@ router.get('/', async (request, response) => {
 
 
 
-router.get('/', async (request, response) => {
+router.get('/all', async (request, response) => {
     
     const restaurantQuery = await db('Restaurants')
     .select('*')
